@@ -1,5 +1,9 @@
 # HyPeR --- Listen, Pause, and Reason: Toward Perception-Grounded Hybrid Reasoning for Audio Understanding
 
+**🎉 Our paper has been accepted to ACL 2026.**
+
+Official repository for **HyPeR**, the ACL 2026 paper *Listen, Pause, and Reason: Toward Perception-Grounded Hybrid Reasoning for Audio Understanding*.
+
 ## Introduction
 
 HyPeR is a perception-grounded audio reasoning framework built on top of `Qwen2-Audio-7B-Instruct`.  
@@ -50,7 +54,7 @@ PAQA supports tasks including:
 - noisy speech translation
 - environment-centric question answering
 
-The dataset is built from speech and audio sources including **MELD**, **CoVoST2**, synthetic multi-speaker QA data, and environmental sound resources such as **MUSAN** and **FSD50K**. See more cases in "/datasets/*.jsonl". [PAQA will be available on Hugging Face](https://huggingface.co/datasets/Joysw909/PAQA)
+The dataset is built from speech and audio sources including **MELD**, **CoVoST2**, synthetic multi-speaker QA data, and environmental sound resources such as **MUSAN** and **FSD50K**. See more cases in "/datasets/*.jsonl". 
 
 ## Method Overview
 
@@ -97,28 +101,7 @@ The reward function jointly considers:
 - **perceptual consistency**
 - **length shaping**
 
-## Main Results
-
-### Table: Accuracy (%) on MMAU, MMAR, and MMSU
-
-| Method | MMAU Test-mini Avg. | MMAU Test Avg. | MMAR Avg. | MMSU Avg. |
-|--------|----------------------|----------------|-----------|-----------|
-| Gemini 2.5 Flash | 64.30 | 64.68 | 66.80 | - |
-| GPT-4o | 61.40 | 59.58 | 63.50 | 56.38 |
-| Audio-Flamingo-3 | 73.30 | 72.42 | 58.50 | - |
-| OmniVinci | 73.10 | 71.60 | 58.30 | - |
-| Qwen2.5-Omni-7B | 71.50 | 71.00 | 56.70 | 60.57 |
-| Qwen2-Audio-7B-Instruct | 54.30 | 48.65 | 30.00 | 48.31 |
-| +SFT | 54.41 | 57.40 | 40.90 | 51.03 |
-| +GRPO | 63.40 | 63.73 | 45.40 | 53.27 |
-| +GRPO + ExpCoT | 65.90 | - | 48.20 | - |
-| **Ours (HyPeR)** | **67.40** | **67.15** | **55.50** | **56.38** |
-| Audio-CoT | 58.10 | - | 31.67 | - |
-| Audio-Reasoner | 61.71 | 57.00 | 36.71 | 35.51 |
-| Audio-Thinker | **68.00** | **67.90** | 52.00 | - |
-
-
-## Additional Findings
+## Findings
 
 - **Reflection helps**, but too many reflection rounds may lead to overthinking and worse results.
 - **Background-sound awareness** improves robustness under noisy conditions.
@@ -128,46 +111,17 @@ The reward function jointly considers:
 
 ## Training
 
-## Data Preparation
+1. Data Preparation
 
-HyPeR uses different data sources in different stages:
+[PAQA will be available on Hugging Face.](https://huggingface.co/datasets/Joysw909/PAQA)
 
-### Stage I: Supervised Fine-Tuning
+2. Stage I: Explicit Perception
 
-Use the **PAQA** dataset for explicit perception training.  
-Each sample contains:
+Use the **PAQA** dataset for Supervised Fine-Tuning training.
 
-- audio input
-- question
-- multi-choice candidates
-- structured perceptual reasoning target
-- reflection
-- final answer
+3. Stage II: RL Optimization
 
-A conceptual example is shown below:
-
-```json
-{
-  "id": "sample_001",
-  "audio_path": "path/to/audio.wav",
-  "question": "Why does the woman refuse the meeting time?",
-  "choices": [
-    "She is unavailable on Friday night",
-    "She does not hear the speaker",
-    "She dislikes the song",
-    "She has already arrived"
-  ],
-  "answer": 0,
-  "env_tag": "Background music with repeated lyrics: 'Friday night'",
-  "asr": "Speaker 1: Are you free Friday night? Speaker 2: I can't make it that evening.",
-  "speaker_analysis": "Speaker 2 is female and responds with a negative tone.",
-  "target": "<THINK>...</THINK><REFLECT>...</REFLECT><FINAL_ANSWER>A</FINAL_ANSWER>"
-}
-```
-
-### Stage II: RL Optimization
-
-For GRPO training, we use 30,000 augmented samples derived from the AVQA dataset, where responses are reformulated into a reasoning-answer structure such as:
+For GRPO training, we randomly use 30,000 samples derived from the [AVQA dataset](https://huggingface.co/datasets/Joysw909/AVQA), where responses are reformulated into a reasoning-answer structure such as:
 
 ```json
 <think>...</think><answer>...</answer>
@@ -176,23 +130,25 @@ For GRPO training, we use 30,000 augmented samples derived from the AVQA dataset
 #### GRPO Training
 
 ```python
-sh run_grpo.sh
+sh run_grpo_deepconf.sh
 ```
 
-
 #### Notes
-	•	Replace the dataset paths in the training scripts with your local paths.
-	•	If you already have the base model locally, modify the model path accordingly.
-	•	We recommend using high-memory GPUs for training.
-	•	PAUSE-based latent reasoning improves robustness, but also increases training and inference cost.
-
-
+- Replace the dataset paths in the training scripts with your local paths.
+- Modify the model path accordingly.
+- We recommend using high-memory GPUs for training.
+- PAUSE-based latent reasoning improves robustness, but also increases training and inference cost. Run `sh run_grpo.sh` first to check the environment.
 
 # Citation
 
-@article{wang2026hyper,
-  title={Listen, Pause, and Reason: Toward Perception-Grounded Hybrid Reasoning for Audio Understanding},
-  author={Wang, Jieyi and Niu, Yazhe and Xu, Dexuan and Wei, Zhongyu},
-  journal={arXiv preprint},
-  year={2026}
+```bibtex
+@misc{wang2026listenpausereasonperceptiongrounded,
+      title={Listen, Pause, and Reason: Toward Perception-Grounded Hybrid Reasoning for Audio Understanding}, 
+      author={Jieyi Wang and Yazhe Niu and Dexuan Xu and Zhongyu Wei},
+      year={2026},
+      eprint={2604.14806},
+      archivePrefix={arXiv},
+      primaryClass={cs.SD},
+      url={https://arxiv.org/abs/2604.14806}, 
 }
+```
